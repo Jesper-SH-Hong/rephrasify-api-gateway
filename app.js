@@ -1,28 +1,52 @@
-const http = require("http");
-const url = require("url");
+const express = require('express');
+const jwt = require('jsonwebtoken');
+require("dotenv").config();
+const { createProxyMiddleware } = require('http-proxy-middleware');
+const cookieParser = require('cookie-parser');
+const SECRET_KEY = process.env.SECRET_KEY;
 
-class APIService {
-  constructor() {
-    this.port = process.env.PORT || 3000;
-  }
+const app = express();
+app.use(cookieParser());
+const port = process.env.PORT || 8000;
 
-  start() {
-    const server = http.createServer((req, res) => {
-      const q = url.parse(req.url, true);
+function authenticateToken(req, res, next) {
+  const token = req.cookies['token'];
 
-      res.setHeader("Access-Control-Allow-Origin", "*");
-      res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  if (token == null) return res.sendStatus(401);
 
-      res.writeHead(200, { "Content-Type": "text/plain" });
-      let message = "API Gateway service\n";
-      let version = "NodeJS " + process.versions.node + "\n";
-      let response = [message, version].join("\n");
-      res.end(response);
-    });
-
-    server.listen(this.port);
-  }
+  jwt.verify(token, SECRET_KEY, (err, user) => {
+    if (err) return res.sendStatus(403);
+    req.user = user;
+    next();
+  });
 }
 
-const server = new APIService();
-server.start();
+app.use('/users', createProxyMiddleware({
+  target: process.env.USER_AUTHENTICATION_SERVICE_URL || 'http://localhost:3000',
+  changeOrigin: true,
+  pathRewrite: {
+    '^/users': ''
+  }
+}));
+
+app.use('/usermanagement', authenticateToken, createProxyMiddleware({
+  target: process.env.USER_AUTHENTICATION_SERVICE_URL || 'http://localhost:3000',
+  changeOrigin: true,
+  pathRewrite: {
+    '^/usermanagement': ''
+  }
+}));
+
+app.use('/huggingface', authenticateToken, createProxyMiddleware({
+  target: process.env.LLM_SERVICE_URL || 'http://localhost:5000',
+  changeOrigin: true,
+  pathRewrite: {
+    '^/huggingface': ''
+  }
+}));
+
+
+// Start server
+app.listen(port, () => {
+  console.log(`API Gateway is running on port ${port}`);
+});
