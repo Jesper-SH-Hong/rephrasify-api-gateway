@@ -3,10 +3,12 @@ const jwt = require('jsonwebtoken');
 require("dotenv").config();
 const { createProxyMiddleware } = require('http-proxy-middleware');
 const cookieParser = require('cookie-parser');
+const cors = require('cors');
 const SECRET_KEY = process.env.SECRET_KEY;
 
 const app = express();
 app.use(cookieParser());
+app.use(cors());
 const port = process.env.PORT || 8000;
 
 function authenticateToken(req, res, next) {
