@@ -5,10 +5,13 @@ const { createProxyMiddleware } = require('http-proxy-middleware');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const SECRET_KEY = process.env.SECRET_KEY;
+const corsOptions = {
+  credentials: true,
+};
 
 const app = express();
 app.use(cookieParser());
-app.use(cors());
+app.use(cors(corsOptions));
 const port = process.env.PORT || 8000;
 
 function authenticateToken(req, res, next) {
