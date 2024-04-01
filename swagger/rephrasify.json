@@ -1,0 +1,921 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Rephrasify 1.0",
+    "description": "This is version 1.0 of the Rephrasify API. It provides user registration, login, and password recovery functionality, as well as access to a Huggingface model for rephrasing text. The API also includes user management features for admins, such as updating user roles and viewing API usage statistics.",
+    "termsOfService": "http://swagger.io/terms/",
+    "contact": {
+      "email": "apiteam@swagger.io"
+    },
+    "license": {
+      "name": "Apache 2.0",
+      "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+    },
+    "version": "1.0.11"
+  },
+  "externalDocs": {
+    "description": "Find out more about Swagger",
+    "url": "http://swagger.io"
+  },
+  "servers": [
+    {
+      "url": "https://api.jesperhong.com"
+    }
+  ],
+  "tags": [
+    {
+      "name": "huggingface",
+      "description": "Access to Huggingface Grammarly model",
+      "externalDocs": {
+        "description": "Find out more",
+        "url": "http://swagger.io"
+      }
+    },
+    {
+      "name": "users",
+      "description": "Operations about users"
+    },
+    {
+      "name": "usermanagement",
+      "description": "Operations about user management"
+    }
+  ],
+  "paths": {
+    "/huggingface/paraphrase": {
+      "post": {
+        "tags": ["huggingface"],
+        "summary": "Reword a body of text",
+        "description": "Endpoint to reword a body of text.",
+        "operationId": "paraphraseText",
+        "requestBody": {
+          "description": "Request body for paraphrasing text",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/paraphraseRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "200 OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/paraphraseResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalServerError"
+                }
+              }            
+            }
+          }
+        }
+      }
+    },
+    "/users/getSecurityQuestions": {
+      "get": {
+        "tags": ["users"],
+        "summary": "Retrieve available security questions",
+        "description": "Endpoint to retrieve available security question.",
+        "operationId": "getSecurityQuestions",
+        "responses": {
+          "200": {
+            "description": "Successfully retrieve security questions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetSecurityQuestions"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalServerError"
+                }              
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/register": {
+      "post": {
+        "tags": ["users"],
+        "summary": "Register a new user",
+        "description": "Endpoint to register a new user.",
+        "operationId": "registerUser",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserRegistrationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful registration",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserInfo"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "User already exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message",
+                      "example": "User already exists"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalServerError"
+                }
+              }
+            }          
+          }
+        }
+      }
+    },
+    "/users/login": {
+      "post": {
+        "tags": ["users"],
+        "summary": "Login user",
+        "description": "Endpoint to login a user.",
+        "operationId": "loginUser",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginCredentials"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful login",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserInfo"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized: Invalid email or password",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedResponse",
+                  "example": {
+                    "message": "Invalid credentials"
+                  }
+                }
+              }
+            }                      
+          },
+          "500": {
+            "description": "Internal server error",
+             "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/InternalServerError"
+                  }
+                }              
+             }
+          }
+        }
+      }
+    },
+    "/users/getUserSecurityQuestion": {
+      "get": {
+        "tags": ["users"],
+        "summary": "Get user security question",
+        "description": "Endpoint to retrieve a user's security question.",
+        "operationId": "getUserSecurityQuestion",
+        "parameters": [
+          {
+            "name": "email",
+            "in": "query",
+            "description": "Email address of the user",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "john@john.com"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserSecurityQuestionResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserNotFoundResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalServerError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/answerSecurityQuestion": {
+      "post": {
+        "tags": ["users"],
+        "summary": "Answer user security question",
+        "description": "Endpoint to answer a user's security question.",
+        "operationId": "answerSecurityQuestion",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnswerSecurityQuestionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "isValid": {
+                      "type": "boolean",
+                      "description": "Indicates whether the answer is valid",
+                      "example": true
+                    }
+                  },
+                  "required": ["isValid"]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalServerError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/changePassword": {
+      "post": {
+        "tags": ["users"],
+        "summary": "Change user password",
+        "description": "Endpoint to change a user's password.",
+        "operationId": "changePassword",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Password changed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserInfo"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalServerError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/usermanagement/getAllUsers": {
+      "get": {
+        "tags": ["usermanagement"],
+        "summary": "Get all users",
+        "description": "Endpoint to retrieve all users.",
+        "operationId": "getAllUsers",
+        "parameters": [
+          {
+            "name": "adminId",
+            "in": "query",
+            "description": "ID of the admin making the request",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "example": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetAllUsersResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden access",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminOnlyResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalServerError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/usermanagement/getAllUsage": {
+      "get": {
+        "tags": ["usermanagement"],
+        "summary": "Get all API usage",
+        "description": "Endpoint to retrieve usage statistics for all API endpoints.",
+        "operationId": "getAllUsage",
+        "parameters": [
+          {
+            "name": "adminId",
+            "in": "query",
+            "description": "ID of the admin making the request",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "example": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetAllUsageResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalServerError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/usermanagement/updateRole": {
+      "put": {
+        "tags": ["usermanagement"],
+        "summary": "Update user role",
+        "description": "Endpoint to update the role of a user.",
+        "operationId": "updateRole",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserRoleRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Role updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                },
+                "example": {
+                  "message": "Role updated successfully"
+                }
+              }
+            }          
+          },
+          "403": {
+            "description": "Forbidden access",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ForbiddenResponse"                                
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalServerError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/usermanagement/deleteUser": {
+      "delete": {
+        "tags": ["usermanagement"],
+        "summary": "Delete user",
+        "description": "Endpoint to delete a user.",
+        "operationId": "deleteUser",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteUserRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                },
+                "example": {
+                  "message": "User deleted successfully"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden access",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminOnlyResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalServerError"
+                }
+              }            
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "paraphraseRequest": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "description": "Specify how to rephrase the text.",
+            "example": "Paraphrase this text"
+          },
+          "text": {
+            "type": "string",
+            "description": "This is the rephrased text.",
+            "example": "The quick brown fox jumps over the lazy dog."
+          }
+        }
+      },
+      "paraphraseResponse": {
+        "type": "object",
+        "properties": {
+          "generated_text": {
+            "type": "string",
+            "example": "The speedy brown fox leaps over the lethargic canine.",
+            "description": "This is the rephrased text."
+          }
+        }
+      },
+      "GetSecurityQuestions": {
+        "type": "object",
+        "properties": {
+          "questions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "description": "Security question ID",
+                  "example": 1
+                },
+                "question": {
+                  "type": "string",
+                  "description": "Security question",
+                  "example": "What is your mother's maiden name?"
+                }
+              }
+            }
+          }
+        },
+        "example": {
+          "questions": [
+            {
+              "id": 1,
+              "question": "What is your mother's maiden name?"
+            },
+            {
+              "id": 2,
+              "question": "What is the name of your first pet?"
+            }
+          ]
+        }
+      },
+      "UserRegistrationRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "john@john.com",
+            "description": "User's email address"
+          },
+          "password": {
+            "type": "string",
+            "example": "password",
+            "description": "User's password"
+          },
+          "questionId": {
+            "type": "integer",
+            "example": 1,
+            "description": "ID of the security question"
+          },
+          "answer": {
+            "type": "string",
+            "example": "answer",
+            "description": "User's answer to the security question"
+          }
+        },
+        "required": ["email", "password", "questionId", "answer"]
+      },
+      "UserInfo": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "ID of the user"
+          },
+          "email": {
+            "type": "string",
+            "description": "Email address of the user"
+          },
+          "apiCount": {
+            "type": "integer",
+            "description": "Number of API requests made by the user (initially 0)"
+          },
+          "isAdmin": {
+            "type": "boolean",
+            "description": "Indicates whether the user is an admin (initially false)"
+          }
+        },
+        "required": ["id", "email", "apiCount", "isAdmin"]
+      },
+      "LoginCredentials": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "User's email address"
+          },
+          "password": {
+            "type": "string",
+            "description": "User's password"
+          }
+        },
+        "required": ["email", "password"]
+      },
+      "GetAllUsersResponse": {
+        "type": "object",
+        "properties": {
+          "users": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "description": "ID of the user"
+                },
+                "email": {
+                  "type": "string",
+                  "example": "john@john.com",
+                  "description": "Email address of the user"
+                },
+                "apiCount": {
+                  "type": "integer",
+                  "description": "Number of API requests made by the user (initially 0)"
+                },
+                "isAdmin": {
+                  "type": "boolean",
+                  "description": "Indicates whether the user is an admin (initially false)"
+                }
+              },
+              "required": ["id", "email", "apiCount", "isAdmin"]
+            }
+          }
+        },
+        "example": {
+          "users": [
+            {
+              "id": 1,
+              "email": "john@john.com",
+              "apiCount": 10,
+              "isAdmin": false
+            },
+            {
+              "id": 2,
+              "email": "jane@jane.com",
+              "apiCount": 5,
+              "isAdmin": true
+            }
+          ]
+        }
+      },
+      "GetAllUsageResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "method": {
+                  "type": "string",
+                  "description": "HTTP method used"
+                },
+                "endpoint": {
+                  "type": "string",
+                  "description": "API endpoint"
+                },
+                "usage": {
+                  "type": "integer",
+                  "description": "Number of times the endpoint has been accessed"
+                }
+              },
+              "required": ["method", "endpoint", "usage"]              
+            }
+          }
+        },
+        "example": {
+          "data": [
+            {
+              "method": "GET",
+              "endpoint": "/huggingface/paraphrase",
+              "usage": 10
+            },
+            {
+              "method": "POST",
+              "endpoint": "/users/register",
+              "usage": 5
+            }
+          ]
+        }
+      },
+      "UserSecurityQuestionRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "Email address of the user",
+            "example": "john@john.com"
+          }
+        }
+      },
+      "UserSecurityQuestionResponse": {
+        "type": "object",
+        "properties": {
+          "question": {
+            "type": "string",
+            "description": "User's security question",
+            "example": "What was the make of your first car?"
+          }
+        }
+      },
+      "AnswerSecurityQuestionRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "User's email address"
+          },
+          "answer": {
+            "type": "string",
+            "description": "User's answer to the security question"
+          }
+        },
+        "required": ["email", "answer"]
+      },
+      "ChangePasswordRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "User's email address"
+          },
+          "password": {
+            "type": "string",
+            "description": "User's current password"
+          }
+        },
+        "required": ["email", "password"]
+      },
+      "UpdateUserRoleRequest": {
+        "type": "object",
+        "properties": {
+          "adminId": {
+            "type": "integer",
+            "description": "ID of the admin making the request"
+          },
+          "userId": {
+            "type": "integer",
+            "description": "ID of the user whose role is being updated"
+          },
+          "isAdmin": {
+            "type": "boolean",
+            "description": "New role for the user (true for admin, false for regular user)"
+          }
+        },
+        "required": ["adminId", "userId", "isAdmin"]
+      },
+      "DeleteUserRequest": {
+        "type": "object",
+        "properties": {
+          "adminId": {
+            "type": "integer",
+            "description": "ID of the admin making the request"
+          },
+          "userId": {
+            "type": "integer",
+            "description": "ID of the user to be deleted"
+          }
+        },
+        "required": ["adminId", "userId"],
+        "example": {
+          "adminId": 5,
+          "userId": 1
+        }
+      },
+      "SuccessResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Success message"
+          }
+        }
+      },
+      "UnauthorizedResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Message indicating unauthorized access",
+            "example": "Unauthorized"
+          }
+        }
+      },
+      "UserNotFoundResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Message indicating user not found",
+            "example": "User not found"
+          }
+        }
+      },
+      "AdminOnlyResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Message indicating admin-only access",
+            "example": "Must be an admin to access this endpoint"
+          }
+        }
+      },
+      "ForbiddenResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Message indicating forbidden access",
+            "example": "Forbidden"
+          }
+        }
+      },      
+      "InternalServerError": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Internal server error",
+            "example": "Internal server error"
+          }
+        }
+      }
+    }
+  }
+}
