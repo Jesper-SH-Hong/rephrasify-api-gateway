@@ -6,12 +6,14 @@ const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const SECRET_KEY = process.env.SECRET_KEY;
 const corsOptions = {
+  origin: ['http://localhost:3001', 'http://localhost:3000', 'http://localhost:5000'] || process.env.CORS_ORIGIN,
   credentials: true,
 };
 
 const app = express();
 app.use(cookieParser());
 app.use(cors(corsOptions));
+
 const port = process.env.PORT || 8000;
 
 function authenticateToken(req, res, next) {
