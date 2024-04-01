@@ -6,8 +6,10 @@ const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const SECRET_KEY = process.env.SECRET_KEY;
 const corsOptions = {
-  origin: process.env.CORS_ORIGIN.split(", ") || ['http://localhost:3001', 'http://localhost:3000', 'http://localhost:5000'],
+  origin: ['https://rephrasify.netlify.app', 'https://u3.jesperhong.com', 'https://llm.jesperhong.com', 'http://localhost:3000'],
   credentials: true,
+  methods: ['GET', 'POST', 'OPTIONS', 'PUT', 'DELETE'],
+allowedHeaders: ['Content-Type', 'Authorization']
 };
 
 const app = express();
@@ -18,6 +20,7 @@ const port = process.env.PORT || 8000;
 
 function authenticateToken(req, res, next) {
   const token = req.cookies['token'];
+  console.error("token: ", token)
 
   if (token == null) return res.sendStatus(401);
 
