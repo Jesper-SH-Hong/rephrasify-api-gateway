@@ -6,7 +6,7 @@ const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const SECRET_KEY = process.env.SECRET_KEY;
 const corsOptions = {
-  origin: ['http://localhost:3001', 'http://localhost:3000', 'http://localhost:5000'] || process.env.CORS_ORIGIN.split(", "),
+  origin: process.env.CORS_ORIGIN.split(", ") || ['http://localhost:3001', 'http://localhost:3000', 'http://localhost:5000'],
   credentials: true,
 };
 
