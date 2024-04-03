@@ -17,7 +17,11 @@ const dynamicSwaggerDefinitions = {
   servers: [
     {
       url: `${protocol}://${host}:${port}`,
-      description: "API gateway URL",
+      description: "Testing server URL",
+    },
+    {
+      url: 'https://api.jesperhong.com',
+      description: 'Production server URL'
     },
   ],
 };
